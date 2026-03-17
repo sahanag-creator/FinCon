@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IE Finance Concentration — Course Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:#f0efec;color:#111;min-height:100vh;padding:28px 20px;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto}
+h1{font-size:17px;font-weight:700;color:#111;margin-bottom:20px;letter-spacing:-0.2px}
+h1 span{font-weight:500;color:#666;font-size:13px;margin-left:8px;letter-spacing:0}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid #ddd;overflow-x:auto;scrollbar-width:none;margin-bottom:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 15px 9px;font-size:12.5px;font-weight:600;color:#888;border:none;background:none;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:color .15s,border-color .15s;letter-spacing:0.1px}
+.tab.active{color:#111}
+.tab[data-c="cal"].active{border-bottom-color:#111}
+.tab[data-c="ib"].active{border-bottom-color:#185FA5}
+.tab[data-c="ft"].active{border-bottom-color:#0F6E56}
+.tab[data-c="acf"].active{border-bottom-color:#BA7517}
+.tab[data-c="am"].active{border-bottom-color:#534AB7}
+.tab[data-c="fm"].active{border-bottom-color:#D85A30}
+.tab[data-c="re"].active{border-bottom-color:#993556}
+.tab:hover:not(.active){color:#333}
+.add-btn{padding:10px 12px 9px;font-size:12.5px;font-weight:600;color:#bbb;border:none;background:none;cursor:pointer;margin-bottom:-2px;border-bottom:2.5px solid transparent}
+.add-btn:hover{color:#888}
+
+/* PANES */
+.cp{display:none;padding:22px 0 44px}.cp.active{display:block}
+
+/* HEADER */
+.ch{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #e0e0e0}
+.ct{font-size:20px;font-weight:700;color:#111;margin-bottom:5px;letter-spacing:-0.3px}
+.cm{font-size:13px;color:#555;line-height:2}
+.cm a{color:#185FA5;text-decoration:none;font-weight:600}.cm a:hover{text-decoration:underline}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.2px}
+.b-ib{background:#E6F1FB;color:#0C447C}.b-ft{background:#E1F5EE;color:#085041}
+.b-acf{background:#FAEEDA;color:#633806}.b-am{background:#EEEDFE;color:#3C3489}
+.b-fm{background:#FAECE7;color:#993C1D}.b-re{background:#FBEAF0;color:#72243E}
+.b-cal{background:#eeeeed;color:#444}
+
+/* INNER NAV */
+.inav{display:flex;gap:3px;margin-bottom:18px;background:#e8e7e4;border-radius:9px;padding:3px;width:fit-content}
+.ib2{padding:5px 14px;font-size:11.5px;font-weight:600;border:none;background:none;cursor:pointer;border-radius:7px;color:#666;transition:all .12s;letter-spacing:0.1px}
+.ib2.active{background:#fff;color:#111;border:.5px solid #d8d8d8;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* SECTIONS */
+.sec{display:none}.sec.active{display:block}
+
+/* TABLE */
+.st{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.st th{text-align:left;font-weight:700;font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.08em;padding:0 7px 8px;border-bottom:1.5px solid #ddd}
+.st td{padding:9px 7px;vertical-align:top;border-bottom:1px solid #e8e8e5;color:#111;line-height:1.55}
+.st tr:last-child td{border-bottom:none}
+.st tr:hover td{background:#eceae6}
+.cS{width:46px}.cD{width:96px}.cT{width:112px}.cR{width:72px}.cSB{width:115px}
+.sn{font-family:'SF Mono',Monaco,'Courier New',monospace;font-size:10.5px;color:#777;font-weight:600}
+.dd{font-weight:700;font-size:12.5px;color:#111}.ds{font-size:10.5px;color:#888;margin-top:2px;font-weight:500}
+.tv{font-size:12px;font-weight:500;color:#222}
+.rb{display:inline-block;padding:2px 7px;background:#e8e7e4;border-radius:5px;font-size:10.5px;color:#444;font-family:monospace;font-weight:700}
+.rb.alt{background:#EEEDFE;color:#3C3489}
+.tr-today td{background:rgba(24,95,165,.07)!important}
+.tr-past td{opacity:.6}
+.tn{font-weight:700;font-size:12.5px;color:#111}
+.rr{font-size:11.5px;color:#666;margin-top:3px;line-height:1.55;font-weight:400}
+.rr a{color:#185FA5;text-decoration:none;font-weight:600}.rr a:hover{text-decoration:underline}
+.rr.ft a{color:#0F6E56}.rr.acf a{color:#BA7517}.rr.am a{color:#534AB7}.rr.fm a{color:#D85A30}.rr.re a{color:#993556}
+.ss2{font-size:10px;color:#999;margin-top:2px;font-weight:500}
+
+/* TAGS */
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;white-space:nowrap;letter-spacing:0.1px}
+.tag.lec{background:#DFF0D0;color:#2D5A0E}
+.tag.exam{background:#FCDECE;color:#8B2500}
+.tag.grp{background:#E3E1FF;color:#2D2487}
+.tag.case{background:#FCECD8;color:#6B3800}
+.tag.sim{background:#FCECD8;color:#5A2800}
+.tag.bmc{background:#D6E8FA;color:#0A3D7A}
+.tag.pitch{background:#D5EFE6;color:#044D30}
+.tag.bbl{background:#E3E1FF;color:#2D2487}
+.tag.xl{background:#FCDECE;color:#8B2500}
+.tag.ws{background:#eeeeed;color:#444}
+.tag.dbf{background:#eeeeed;color:#444}
+
+/* MODULE DIVIDERS */
+.md{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:3px 8px;border-radius:4px;display:inline-block;margin:2px 0}
+.md.acf{background:#FAEEDA;color:#633806}.md.am{background:#EEEDFE;color:#3C3489}
+.md.fm{background:#FAECE7;color:#993C1D}.md.re{background:#FBEAF0;color:#993556}
+
+/* EVAL */
+.eg{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px;margin-bottom:20px}
+.ec{background:#e8e7e4;border-radius:9px;padding:14px 10px;text-align:center}
+.ep{font-size:24px;font-weight:700;color:#111;letter-spacing:-0.5px}
+.el{font-size:10.5px;color:#666;margin-top:4px;font-weight:500}
+.mr{margin-bottom:11px}
+.mh{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;color:#222;margin-bottom:4px}
+.mb{background:#ddd;border-radius:4px;height:5px}
+.bf{height:5px;border-radius:4px}
+.bf.ib{background:#185FA5}.bf.ft{background:#0F6E56}.bf.acf{background:#BA7517}
+.bf.am{background:#534AB7}.bf.fm{background:#D85A30}.bf.re{background:#993556}
+
+/* BIB */
+.bc{background:#fff;border:1px solid #e0e0de;border-radius:10px;padding:12px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.bt{font-weight:700;font-size:13px;color:#111;margin-bottom:3px}
+.bm{font-size:11.5px;color:#777;line-height:1.7;font-weight:500}
+.brq{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.brq.comp{color:#0C447C}.brq.rec{color:#aaa}
+.bl{display:inline-block;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap}
+.bl.ib{background:#E6F1FB;color:#185FA5}.bl.ft{background:#E1F5EE;color:#0F6E56}
+.bl.acf{background:#FAEEDA;color:#633806}.bl.am{background:#EEEDFE;color:#3C3489}
+.bl.fm{background:#FAECE7;color:#993C1D}.bl.re{background:#FBEAF0;color:#993556}
+.bl:hover{opacity:.8}
+
+/* POLICIES */
+.pb{margin-bottom:16px}
+.pb h3{font-size:13px;font-weight:700;color:#111;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #e4e4e2}
+.pb p,.pb li{font-size:12.5px;color:#555;line-height:1.75;margin-bottom:4px;font-weight:400}
+.pb ul{padding-left:16px}
+.pb a{color:#185FA5;text-decoration:none;font-weight:600}.pb a:hover{text-decoration:underline}
+.pb em{font-style:italic;font-size:11.5px;color:#666}
+.pb strong{font-weight:700;color:#222}
+
+/* UTILS */
+.dv{height:1px;background:#e4e4e2;margin:18px 0}
+.sl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+
+/* CALENDAR SPECIFIC */
+.cal-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.leg-item{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#444;font-weight:500}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.date-sep-row td{background:#e8e7e4!important;padding:7px 7px 4px;border-bottom:1px solid #d8d8d5}
+.date-sep-label{font-size:12.5px;font-weight:700;color:#222}
+.date-sep-day{font-size:11px;color:#888;margin-left:7px;font-weight:500}
+.date-sep-count{float:right;font-size:10.5px;color:#aaa;font-weight:600}
+.subj-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;letter-spacing:0.1px}
+.sp-ib{background:#E6F1FB;color:#0C447C}
+.sp-ft{background:#E1F5EE;color:#085041}
+.sp-acf{background:#FAEEDA;color:#633806}
+.sp-am{background:#EEEDFE;color:#3C3489}
+.sp-fm{background:#FAECE7;color:#993C1D}
+.sp-re{background:#FBEAF0;color:#72243E}
+.cal-today-row td{background:rgba(24,95,165,.06)!important}
+.cal-past-row td{color:#bbb}
+.cal-past-row .tn{color:#bbb;font-weight:600}
+.cal-past-row .tag{opacity:.45}
+.cal-past-row .subj-pill{opacity:.45}
+</style>
+
+<div class="wrap">
+<h1>IE Finance Concentration <span>International MBA · Spring 2026</span></h1>
+
+<div class="tabs">
+  <button class="tab active" data-c="cal" onclick="sc('cal',this)">📅 Calendar</button>
+  <button class="tab" data-c="ib"  onclick="sc('ib',this)">Investment Banking</button>
+  <button class="tab" data-c="ft"  onclick="sc('ft',this)">Fintech &amp; DeFi</button>
+  <button class="tab" data-c="acf" onclick="sc('acf',this)">Adv. Corporate Finance</button>
+  <button class="tab" data-c="am"  onclick="sc('am',this)">Asset Management</button>
+  <button class="tab" data-c="fm"  onclick="sc('fm',this)">Financial Modelling</button>
+  <button class="tab" data-c="re"  onclick="sc('re',this)">Real Estate Finance</button>
+  <button class="add-btn">+ Add course</button>
+</div>
+
+<!-- ══════════════ CALENDAR PANE ══════════════ -->
+<div class="cp active" id="pane-cal">
+  <div class="ch">
+    <div class="ct">Day-by-Day Schedule</div>
+    <div class="cm">All sessions across 6 courses · Spring 2026 · Sorted chronologically</div>
+  </div>
+  <div class="cal-legend">
+    <span class="leg-item"><span class="leg-dot" style="background:#185FA5"></span>Investment Banking</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#0F6E56"></span>Fintech &amp; DeFi</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#BA7517"></span>Adv. Corporate Finance</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#534AB7"></span>Asset Management</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#D85A30"></span>Financial Modelling</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#993556"></span>Real Estate Finance</span>
+  </div>
+  <table class="st" style="table-layout:fixed">
+    <thead><tr>
+      <th class="cD">Date</th>
+      <th class="cT">Time</th>
+      <th class="cR">Room</th>
+      <th class="cSB">Subject</th>
+      <th style="width:40px">Ses.</th>
+      <th>Topic</th>
+      <th style="width:64px">Type</th>
+    </tr></thead>
+    <tbody id="cal-body"></tbody>
+  </table>
+</div>
+
+<!-- ══════════════ INVESTMENT BANKING ══════════════ -->
+<div class="cp" id="pane-ib">
+  <div class="ch"><div class="ct">Investment Banking</div><div class="cm"><span class="badge b-ib">Finance · Concentrations</span> · Int'l MBA · 15 sessions · MM-503<br>Prof. Alexander de Groot · <a href="mailto:adegroot@faculty.ie.edu">adegroot@faculty.ie.edu</a></div></div>
+  <div class="inav"><button class="ib2 active" onclick="ss('ib','sessions',this)">Sessions</button><button class="ib2" onclick="ss('ib','evaluation',this)">Evaluation</button><button class="ib2" onclick="ss('ib','bibliography',this)">Bibliography</button><button class="ib2" onclick="ss('ib','policies',this)">Policies</button></div>
+  <div class="sec active" id="ib-sec-sessions">
+    <table class="st"><thead><tr><th class="cS">Ses.</th><th class="cD">Date</th><th class="cT">Time</th><th class="cR">Room</th><th>Topic &amp; Readings</th><th style="width:64px">Type</th></tr></thead><tbody>
+      <tr class="tr-today"><td class="sn">1–2</td><td><div class="dd">Mar 17</div><div class="ds">Tue ★</div></td><td class="tv">9:00–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Fixed Income Valuation: Overview</div><div class="rr">BKM — Essentials of Investments, 12th ed.</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">3</td><td><div class="dd">Mar 24</div><div class="ds">Tue</div></td><td class="tv">1:00–2:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Fixed Income Valuation: Case Study</div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">4</td><td><div class="dd">Apr 7</div><div class="ds">Tue</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Equities Valuation: Overview</div><div class="rr">BKM — Essentials of Investments, 12th ed.</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">5</td><td><div class="dd">Apr 13</div><div class="ds">Mon</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Equities Valuation: Case Study</div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">6</td><td><div class="dd">Apr 14</div><div class="ds">Tue</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Comparable Companies Analysis</div><div class="rr">Rosenbaum &amp; Pearl — <a href="https://hbsp.harvard.edu/product/9781119867876" target="_blank">Investment Banking</a>, Ch.1</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">7</td><td><div class="dd">Apr 20</div><div class="ds">Mon</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Precedent Transaction Analysis</div><div class="rr">Rosenbaum &amp; Pearl — <a href="https://hbsp.harvard.edu/product/9781119867876" target="_blank">Investment Banking</a>, Ch.2</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">8</td><td><div class="dd">Apr 21</div><div class="ds">Tue</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Discounted Cash Flow Analysis</div><div class="rr">Rosenbaum &amp; Pearl — <a href="https://hbsp.harvard.edu/product/9781119867876" target="_blank">Investment Banking</a>, Ch.3</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">9</td><td><div class="dd">Apr 27</div><div class="ds">Mon</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Leveraged Buyouts</div><div class="rr">Rosenbaum &amp; Pearl — <a href="https://hbsp.harvard.edu/product/9781119867876" target="_blank">Investment Banking</a>, Ch.4</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">10</td><td><div class="dd">Apr 28</div><div class="ds">Tue</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Leveraged Buyout Analysis</div><div class="rr">Rosenbaum &amp; Pearl — <a href="https://hbsp.harvard.edu/product/9781119867876" target="_blank">Investment Banking</a>, Ch.5</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">11</td><td><div class="dd">May 11</div><div class="ds">Mon</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Sell-Side vs. Buy-Side M&amp;A</div><div class="rr">Rosenbaum &amp; Pearl — <a href="https://hbsp.harvard.edu/product/9781119867876" target="_blank">Investment Banking</a>, Ch.6 &amp; 7</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">12</td><td><div class="dd">May 12</div><div class="ds">Tue</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Group Presentations — Case 3</div><div class="rr">Technical note: Company valuation through ratios (FIN020140)</div></td><td><span class="tag grp">Group</span></td></tr>
+      <tr><td class="sn">13–14</td><td><div class="dd">May 19</div><div class="ds">Tue</div></td><td class="tv">9:00–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Group Presentations (cont.) &amp; Rehearsal</div></td><td><span class="tag grp">Group</span></td></tr>
+      <tr><td class="sn">15</td><td><div class="dd">May 28</div><div class="ds">Thu</div></td><td class="tv">12:30–1:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Final Exam</div><div class="rr">No AI tools permitted</div></td><td><span class="tag exam">Exam</span></td></tr>
+    </tbody></table>
+  </div>
+  <div class="sec" id="ib-sec-evaluation">
+    <div class="sl">Grade breakdown</div>
+    <div class="eg"><div class="ec"><div class="ep">35%</div><div class="el">Final Exam</div></div><div class="ec"><div class="ep">30%</div><div class="el">Group Work</div></div><div class="ec"><div class="ep">20%</div><div class="el">Class Participation</div></div><div class="ec"><div class="ep">10%</div><div class="el">Individual Work</div></div><div class="ec"><div class="ep">5%</div><div class="el">Presentation</div></div></div>
+    <div class="dv"></div><div class="sl">Teaching methodology</div>
+    <div class="mr"><div class="mh"><span>Lectures</span><span>60%</span></div><div class="mb"><div class="bf ib" style="width:60%"></div></div></div>
+    <div class="mr"><div class="mh"><span>Group work</span><span>20%</span></div><div class="mb"><div class="bf ib" style="width:20%"></div></div></div>
+    <div class="mr"><div class="mh"><span>Exercises / async</span><span>10%</span></div><div class="mb"><div class="bf ib" style="width:10%"></div></div></div>
+    <div class="mr"><div class="mh"><span>Discussions</span><span>10%</span></div><div class="mb"><div class="bf ib" style="width:10%"></div></div></div>
+    <div class="dv"></div><div class="sl">AI policy</div>
+    <div class="pb"><p>GenAI permitted throughout but <strong>strictly forbidden during the Final Exam</strong> (Session 15, May 28).</p></div>
+  </div>
+  <div class="sec" id="ib-sec-bibliography">
+    <div class="bc"><div><div class="brq comp">Compulsory</div><div class="bt">Essentials of Investments (BKM)</div><div class="bm">Bodie, Kane &amp; Marcus · McGraw-Hill · 12th ed. · 2022 · ISBN: 9781260772166</div></div><a class="bl ib" href="https://www.mheducation.com/highered/product/essentials-investments-bodie-kane/M9781260772166.html" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq comp">Compulsory</div><div class="bt">Investment Banking: Valuation, LBOs, M&amp;A, and IPOs</div><div class="bm">Rosenbaum &amp; Pearl · Wiley · 3rd ed. · 2022 · ISBN: 9781119867876</div></div><a class="bl ib" href="https://www.wiley.com/en-gb/Investment+Banking%3A+Valuation%2C+LBOs%2C+M%26A%2C+and+IPOs%2C+3rd+Edition-p-9781119867876" target="_blank">Library ↗</a></div>
+  </div>
+  <div class="sec" id="ib-sec-policies">
+    <div class="pb"><h3>Attendance</h3><p>Mandatory 100%. Below 80% = FAIL. Exceptional absences capped at 20%. Contact Program Management — not faculty.</p><p><a href="https://ie.edu" target="_blank">IE Attendance Policy ↗</a></p></div>
+    <div class="pb"><h3>Behavior</h3><ul><li>On time — latecomers marked absent. No leaving mid-lecture. No side conversations.</li><li>Laptops for course use only. No phones/tablets. Escalation: 1st=1, 2nd=3, 3rd+=5 absences.</li></ul></div>
+    <div class="pb"><h3>Academic integrity</h3><p><a href="https://ie.edu" target="_blank">Academic Integrity Policy ↗</a> · <a href="https://ie.edu" target="_blank">Code of Conduct ↗</a></p></div>
+  </div>
+</div>
+
+<!-- ══════════════ FINTECH ══════════════ -->
+<div class="cp" id="pane-ft">
+  <div class="ch"><div class="ct">Fintech, Digital Finance &amp; DeFi</div><div class="cm"><span class="badge b-ft">Finance · Concentrations</span> · Int'l MBA · 15 sessions · MM-503<br>Prof. Luis Maldonado García-Pertierra · <a href="mailto:lmaldonado@faculty.ie.edu">lmaldonado@faculty.ie.edu</a></div></div>
+  <div class="inav"><button class="ib2 active" onclick="ss('ft','sessions',this)">Sessions</button><button class="ib2" onclick="ss('ft','evaluation',this)">Evaluation</button><button class="ib2" onclick="ss('ft','policies',this)">Policies</button></div>
+  <div class="sec active" id="ft-sec-sessions">
+    <table class="st"><thead><tr><th class="cS">Ses.</th><th class="cD">Date</th><th class="cT">Time</th><th class="cR">Room</th><th>Topic &amp; Case</th><th style="width:64px">Type</th></tr></thead><tbody>
+      <tr><td class="sn">1</td><td><div class="dd">Mar 16</div><div class="ds">Mon</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Introduction: FinTech — Reshaping the Financial Sector</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/UV7225-PDF-ENG" target="_blank">Cutting Through the Fog: Finding a Future with FinTech</a> (UV7225)<div class="ss2">Allayannis &amp; Cartwright · Darden</div></div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr class="tr-today"><td class="sn">2</td><td><div class="dd">Mar 17</div><div class="ds">Tue ★</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Blockchain — Much More Than Just Bitcoin</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/714519-PDF-ENG" target="_blank">Bitcoin: The Future of Digital Payments?</a> (714519)<div class="ss2">Hagiu &amp; Beach · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">3</td><td><div class="dd">Mar 23</div><div class="ds">Mon</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">DeFi — Decentralized Finance</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/222001-PDF-ENG" target="_blank">Awakening the Blockchain: An Overview of DeFi</a> (222001)<div class="ss2">Di Maggio et al. · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">4</td><td><div class="dd">Apr 7</div><div class="ds">Tue</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Big Data &amp; Analytics — The New "Oil"</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/KE1026-PDF-ENG" target="_blank">Kueski: Revolutionizing Consumer Credit in Mexico</a> (KE1026)<div class="ss2">Markovich &amp; Achwal · Kellogg</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">5</td><td><div class="dd">Apr 8</div><div class="ds">Wed</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Payments — A Large Business with Very Different Players</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/806188-PDF-ENG" target="_blank">PayPal Merchant Services</a> (806188)<div class="ss2">Eisenmann &amp; Barley · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">6</td><td><div class="dd">Apr 9</div><div class="ds">Thu</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">The Future of Payments</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/321068-PDF-ENG" target="_blank">Nubank: Democratizing Financial Services</a> (321068)<div class="ss2">Chu et al. · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">7</td><td><div class="dd">Apr 10</div><div class="ds">Fri</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Peer-to-Peer Lending</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/E597-PDF-ENG" target="_blank">Lending Club</a> (E597)<div class="ss2">Saucedo &amp; Siegel · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">8</td><td><div class="dd">Apr 13</div><div class="ds">Mon</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Robo-Advisors — Democratizing Asset Management</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/216085-PDF-ENG" target="_blank">The Wealthfront Generation</a> (216085)<div class="ss2">Viceira &amp; Ciechanover · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">9</td><td><div class="dd">Apr 15</div><div class="ds">Wed</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">How to Create a FinTech</div><div class="rr">Practical workshop — pain points, team building, go-to-market strategy</div></td><td><span class="tag ws">Workshop</span></td></tr>
+      <tr><td class="sn">10</td><td><div class="dd">Apr 20</div><div class="ds">Mon</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Financial Inclusion and Mobile Banking</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/511049-PDF-ENG" target="_blank">Mobile Banking for the Unbanked</a> (511049)<div class="ss2">Rangan &amp; Lee · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">11</td><td><div class="dd">Apr 22</div><div class="ds">Wed</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Regulation — Enabler or Constraint?</div><div class="rr ft"><a href="https://www.iveycases.com/ProductView.aspx?id=W16352" target="_blank">Lending Loop: FinTech Disruption in Canadian Banking</a> (W16352)<div class="ss2">Vergne &amp; Cumming · Ivey</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">12</td><td><div class="dd">Apr 23</div><div class="ds">Thu</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Scalability in the Era of Exponential Growth</div><div class="rr ft"><a href="https://hbsp.harvard.edu/product/718426-PDF-ENG" target="_blank">Tencent</a> (718426)<div class="ss2">Wells &amp; Ellsworth · HBS</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">13</td><td><div class="dd">Apr 27</div><div class="ds">Mon</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Partnership with Banks — A Win-Win Game</div><div class="rr ft"><a href="https://www.iveycases.com/ProductView.aspx?id=W17436" target="_blank">A Pathway for Scotiabank's Innovation</a> (W17436)<div class="ss2">Vergne, Weil &amp; Hsieh · Ivey</div></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">14–15</td><td><div class="dd">Apr 30</div><div class="ds">Thu</div></td><td class="tv">12:00–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Final FinTech Pitches</div><div class="rr">Group presentations — FinTech venture pitch (40% of grade)</div></td><td><span class="tag pitch">Pitch</span></td></tr>
+    </tbody></table>
+  </div>
+  <div class="sec" id="ft-sec-evaluation">
+    <div class="sl">Grade breakdown</div>
+    <div class="eg"><div class="ec"><div class="ep">40%</div><div class="el">Final Group Pitches</div></div><div class="ec"><div class="ep">30%</div><div class="el">Cases (Individual)</div></div><div class="ec"><div class="ep">30%</div><div class="el">Class Participation</div></div></div>
+    <div class="dv"></div><div class="sl">Teaching methodology</div>
+    <div class="mr"><div class="mh"><span>Lectures</span><span>50%</span></div><div class="mb"><div class="bf ft" style="width:50%"></div></div></div>
+    <div class="mr"><div class="mh"><span>Discussions</span><span>20%</span></div><div class="mb"><div class="bf ft" style="width:20%"></div></div></div>
+    <div class="mr"><div class="mh"><span>Group work</span><span>20%</span></div><div class="mb"><div class="bf ft" style="width:20%"></div></div></div>
+    <div class="mr"><div class="mh"><span>Exercises / async</span><span>10%</span></div><div class="mb"><div class="bf ft" style="width:10%"></div></div></div>
+    <div class="dv"></div><div class="sl">AI policy</div>
+    <div class="pb"><p>GenAI permitted for research, ideation, outlining, proofreading &amp; grammar <strong>with acknowledgement</strong>. When in doubt, consult the professor.</p></div>
+  </div>
+  <div class="sec" id="ft-sec-policies">
+    <div class="pb"><h3>Attendance</h3><p>Mandatory 100%. Below 80% = FAIL. Exceptional absences capped at 20%.</p><p><a href="https://ie.edu" target="_blank">IE Attendance Policy ↗</a></p></div>
+    <div class="pb"><h3>Academic integrity</h3><p><a href="https://ie.edu" target="_blank">Academic Integrity Policy ↗</a> · <a href="https://ie.edu" target="_blank">Code of Conduct ↗</a></p></div>
+  </div>
+</div>
+
+<!-- ══════════════ ADVANCED CORPORATE FINANCE ══════════════ -->
+<div class="cp" id="pane-acf">
+  <div class="ch"><div class="ct">Advanced Corporate Finance</div><div class="cm"><span class="badge b-acf">Finance · Concentrations</span> · Int'l MBA · 15 sessions · MM-503<br>Prof. Concepción Martín Berzal · <a href="mailto:CMartin@faculty.ie.edu">CMartin@faculty.ie.edu</a></div></div>
+  <div class="inav"><button class="ib2 active" onclick="ss('acf','sessions',this)">Sessions</button><button class="ib2" onclick="ss('acf','evaluation',this)">Evaluation</button><button class="ib2" onclick="ss('acf','bibliography',this)">Bibliography</button><button class="ib2" onclick="ss('acf','policies',this)">Policies</button></div>
+  <div class="sec active" id="acf-sec-sessions">
+    <table class="st"><thead><tr><th class="cS">Ses.</th><th class="cD">Date</th><th class="cT">Time</th><th class="cR">Room</th><th>Topic &amp; Readings</th><th style="width:64px">Type</th></tr></thead><tbody>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md acf">Mergers &amp; Acquisitions</span></td></tr>
+      <tr><td class="sn">1</td><td><div class="dd">Mar 18</div><div class="ds">Wed</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">The M&amp;A Process</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/5242-PDF-ENG" target="_blank">Finance Reading: The M&amp;A Process</a> (5242) · Coates · HBS</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">2</td><td><div class="dd">Mar 20</div><div class="ds">Fri</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">M&amp;A Deals: Tesla–SolarCity</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/218108-PDF-ENG" target="_blank">Tesla–SolarCity</a> (218108) · Mayfield &amp; Siriwardane · HBS</div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">3</td><td><div class="dd">Mar 23</div><div class="ds">Mon</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Friendly &amp; Hostile Takeovers</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/UV8480-PDF-ENG" target="_blank">LVMH: The Tiffany Acquisition</a> (UV8480) · Schill &amp; Saine · Darden</div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">4</td><td><div class="dd">Mar 24</div><div class="ds">Tue</div></td><td class="tv">11:30am–12:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Financial Modeling in M&amp;A <span style="font-size:9px;color:#aaa">(pre-game due Ses.5)</span></div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/UV6759-PDF-ENG" target="_blank">Business Valuation in M&amp;A</a> (UV6759) · <a href="https://hbsp.harvard.edu/product/208059-PDF-ENG" target="_blank">EPS Accretion/Dilution</a> (208059)</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">5</td><td><div class="dd">Apr 9</div><div class="ds">Thu</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Simulation: Negotiating M&amp;A Transactions</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/4805-HTM-ENG" target="_blank">M&amp;A in Wine Country V2</a> (4805) · Luehrman &amp; Kester · HBS</div></td><td><span class="tag sim">Sim</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md acf">Capital Markets &amp; Financing</span></td></tr>
+      <tr><td class="sn">6</td><td><div class="dd">Apr 14</div><div class="ds">Tue</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">M&amp;A Simulation Debrief</div><div class="rr">Epilogue (own material)</div></td><td><span class="tag dbf">Debrief</span></td></tr>
+      <tr><td class="sn">7</td><td><div class="dd">Apr 17</div><div class="ds">Fri</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Debt Financing &amp; Wall Street Innovation</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/202129-PDF-ENG" target="_blank">Convertible Securities</a> (202129) · Chacko &amp; Strick · HBS</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">8</td><td><div class="dd">Apr 21</div><div class="ds">Tue</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Financial Options &amp; Corporate Finance</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/5197-PDF-ENG" target="_blank">Finance Reading: Financial Options</a> (5197) · HBS</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">9</td><td><div class="dd">Apr 23</div><div class="ds">Thu</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Managing International Risks <span style="font-size:9px;color:#185FA5">BMC Currencies due</span></div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/UV2519-PDF-ENG" target="_blank">Hedging with Forwards &amp; Futures</a> (UV2519) · <a href="https://hbsp.harvard.edu/product/908N13-PDF-ENG" target="_blank">Pixonix Currency Exposure</a> (908N13)</div></td><td><span class="tag bmc">BMC</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md acf">Private Equity &amp; VC</span></td></tr>
+      <tr><td class="sn">10</td><td><div class="dd">Apr 29</div><div class="ds">Wed</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">PE &amp; VC Overview</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/8072-PDF-ENG" target="_blank">Financing Entrepreneurial Ventures</a> (8072) · <a href="https://hbsp.harvard.edu/product/UV6986-PDF-ENG" target="_blank">Basics of PE Funds</a> (UV6986)</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">11</td><td><div class="dd">May 11</div><div class="ds">Mon</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Public-to-Private Deals</div><div class="rr acf"><a href="https://www.iveycases.com/ProductView.aspx?id=W30166" target="_blank">Elon Musk's Twitter Deal: LBO</a> (W30166) · Ivey · <a href="https://www.mckinsey.com/capabilities/strategy-and-corporate-finance/our-insights/the-six-types-of-successful-acquisitions" target="_blank">6 Types of Successful Acquisitions</a> · McKinsey</div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">12</td><td><div class="dd">May 13</div><div class="ds">Wed</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Financial Modeling in Private Equity</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/UV7578-PDF-ENG" target="_blank">Valuing Late-Stage Companies &amp; LBOs</a> (UV7578) · Chaplinsky · Darden</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">13</td><td><div class="dd">May 20</div><div class="ds">Wed</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">LBO Simulation — Finsimco</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/FS0013-HTM-ENG" target="_blank">Finsimco Simulation: Leveraged Buyout</a> (FS0013) · HBS</div></td><td><span class="tag sim">Sim</span></td></tr>
+      <tr><td class="sn">14</td><td><div class="dd">May 25</div><div class="ds">Mon</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Divestiture Alternatives &amp; IPOs</div><div class="rr acf"><a href="https://hbsp.harvard.edu/product/213112-PDF-ENG" target="_blank">PE Exits</a> · <a href="https://hbsp.harvard.edu/product/UV8557-PDF-ENG" target="_blank">All Things IPO</a> · <a href="https://www.iveycases.com/ProductView.aspx?id=W18228" target="_blank">Spotify IPO</a> · <a href="https://www.iveycases.com/ProductView.aspx?id=W12453" target="_blank">Facebook IPO</a></div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td class="sn">15</td><td><div class="dd">Jun 1</div><div class="ds">Mon</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Final Exam</div></td><td><span class="tag exam">Exam</span></td></tr>
+    </tbody></table>
+  </div>
+  <div class="sec" id="acf-sec-evaluation">
+    <div class="sl">Grade breakdown</div>
+    <div class="eg"><div class="ec"><div class="ep">40%</div><div class="el">Final Exam</div></div><div class="ec"><div class="ep">20%</div><div class="el">Workgroups — Simulations</div></div><div class="ec"><div class="ep">20%</div><div class="el">Workgroups — Bloomberg</div></div><div class="ec"><div class="ep">20%</div><div class="el">Class Participation</div></div></div>
+    <div class="dv"></div>
+    <div class="pb"><p><strong>M&amp;A Simulation — Wine Country V2:</strong> Team deal negotiation. Pre-game assignment due before Session 5.</p><p><strong>LBO Simulation — Finsimco:</strong> PE deal structuring, financing design &amp; return optimization.</p><p><strong>Bloomberg Market Concepts (BMC):</strong> Currencies module due before Session 9.</p></div>
+    <div class="dv"></div><div class="sl">AI policy</div>
+    <div class="pb"><p>GenAI permitted with acknowledgement but <strong>forbidden for assignments, group submissions, and exams</strong>.</p></div>
+  </div>
+  <div class="sec" id="acf-sec-bibliography">
+    <div class="sl">Compulsory</div>
+    <div class="bc"><div><div class="brq comp">Compulsory</div><div class="bt">Principles of Corporate Finance</div><div class="bm">Brealey, Myers, Allen + Edmans · McGraw-Hill · 13th ed. · 2020 · ISBN: 9781260565553</div></div><a class="bl acf" href="https://www.mheducation.com/highered/product/principles-corporate-finance-brealey-myers/M9781260565553.html" target="_blank">Library ↗</a></div>
+    <div class="sl" style="margin-top:14px">Recommended</div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Mergers, Acquisitions, Divestitures, and Other Restructurings</div><div class="bm">Paul Pignataro · Wiley · 2015 · ISBN: 1118908716</div></div><a class="bl acf" href="https://www.wiley.com/en-us/Mergers%2C+Acquisitions%2C+Divestitures%2C+and+Other+Restructurings-p-9781118908716" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Mastering Private Equity</div><div class="bm">Zeisberger, Prahl et al. · Wiley · 2017 · ISBN: 1119327974</div></div><a class="bl acf" href="https://www.wiley.com/en-us/Mastering+Private+Equity-p-9781119327974" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Valuation: Measuring and Managing the Value of Companies</div><div class="bm">McKinsey &amp; Co. · Wiley Finance · 8th ed. · 2025 · ISBN: 9781119610922</div></div><a class="bl acf" href="https://www.wiley.com/en-us/Valuation%3A+Measuring+and+Managing+the+Value+of+Companies%2C+8th+Edition-p-9781119610922" target="_blank">Library ↗</a></div>
+  </div>
+  <div class="sec" id="acf-sec-policies">
+    <div class="pb"><h3>Attendance</h3><p>Mandatory 100%. Below 80% = FAIL. Exceptional absences capped at 20%.</p><p><a href="https://ie.edu" target="_blank">IE Attendance Policy ↗</a></p></div>
+    <div class="pb"><h3>Academic integrity</h3><p><a href="https://ie.edu" target="_blank">Academic Integrity Policy ↗</a> · <a href="https://ie.edu" target="_blank">Code of Conduct ↗</a></p></div>
+  </div>
+</div>
+
+<!-- ══════════════ ASSET MANAGEMENT ══════════════ -->
+<div class="cp" id="pane-am">
+  <div class="ch"><div class="ct">Asset Management &amp; Global Markets</div><div class="cm"><span class="badge b-am">Finance · Concentrations</span> · Int'l MBA · 15 sessions · MM-503 / V-403 Trading Room<br>Prof. Rafael Hurtado Coll · <a href="mailto:rhurtado@faculty.ie.edu">rhurtado@faculty.ie.edu</a></div></div>
+  <div class="inav"><button class="ib2 active" onclick="ss('am','sessions',this)">Sessions</button><button class="ib2" onclick="ss('am','evaluation',this)">Evaluation</button><button class="ib2" onclick="ss('am','bibliography',this)">Bibliography</button><button class="ib2" onclick="ss('am','policies',this)">Policies</button></div>
+  <div class="sec active" id="am-sec-sessions">
+    <table class="st"><thead><tr><th class="cS">Ses.</th><th class="cD">Date</th><th class="cT">Time</th><th class="cR">Room</th><th>Topic &amp; Readings</th><th style="width:64px">Type</th></tr></thead><tbody>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md am">Industry &amp; Portfolio Foundations</span></td></tr>
+      <tr><td class="sn">1</td><td><div class="dd">Mar 18</div><div class="ds">Wed</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Introduction to the Asset Management Industry</div><div class="rr am"><a href="https://www.thinkingaheadinstitute.org/research-papers/the-worlds-largest-500-asset-managers/" target="_blank">The World's Largest 500 Asset Managers</a> — Thinking Ahead Institute</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">2</td><td><div class="dd">Mar 19</div><div class="ds">Thu</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Introduction to Portfolio Management (I)</div><div class="rr am"><a href="https://www.cengage.com/c/investment-analysis-and-portfolio-management-10e-reilly/9781133627036/" target="_blank">Investment Analysis &amp; Portfolio Management</a> — Reilly &amp; Brown · Cengage</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">3</td><td><div class="dd">Mar 23</div><div class="ds">Mon</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Introduction to Portfolio Management (II)</div><div class="rr am">Portfolio theory, alpha, beta, fundamental &amp; technical analysis</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md am">Asset Class Management</span></td></tr>
+      <tr><td class="sn">4</td><td><div class="dd">Apr 8</div><div class="ds">Wed</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Equity Management (I)</div><div class="rr am"><a href="https://www.ubs.com/global/en/asset-management/insights/asset-class-research/equities/2025/global-investment-returns-yearbook.html" target="_blank">Global Investment Returns Yearbook 2025</a> — Dimson, Marsh &amp; Staunton · UBS</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">5</td><td><div class="dd">Apr 14</div><div class="ds">Tue</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Equity Management (II)</div><div class="rr am">BKM — <a href="https://www.mheducation.com/highered/product/investments-bodie-kane/M9781260571158.html" target="_blank">Investments</a>, Ch.14–16</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">6</td><td><div class="dd">Apr 16</div><div class="ds">Thu</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Fixed Income Management</div><div class="rr am">BKM — <a href="https://www.mheducation.com/highered/product/investments-bodie-kane/M9781260571158.html" target="_blank">Investments</a>, Ch.14–16 · Fixed income strategies, Forex</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">7–8</td><td><div class="dd">Apr 17</div><div class="ds">Fri</div></td><td class="tv">12:00–2:50pm</td><td><span class="rb alt">V-403 Trading</span></td><td><div class="tn">Bloomberg Trading Room Sessions</div><div class="rr am"><a href="https://www.bloomberg.com/professional/support/documentation/" target="_blank">Bloomberg Getting Started Guide</a> · Equity picking, real portfolio building, risk/return analysis</div></td><td><span class="tag bbl">Bloomberg</span></td></tr>
+      <tr><td class="sn">9</td><td><div class="dd">Apr 22</div><div class="ds">Wed</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Alternative Investments</div><div class="rr am"><a href="https://www.blackrock.com/us/individual/insights/blackrock-investment-institute/new-diversification" target="_blank">The New Diversification: Open Your Eyes to Alternatives</a> — BlackRock</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md am">Portfolio Construction &amp; Risk</span></td></tr>
+      <tr><td class="sn">10</td><td><div class="dd">Apr 24</div><div class="ds">Fri</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Asset Allocation (I)</div><div class="rr am"><a href="https://www.ubs.com/global/en/asset-management/insights/asset-class-research/multi-asset/strategic-vs-tactical-asset-allocation.html" target="_blank">Understanding Strategic vs. Tactical Asset Allocation</a> — Hyman · UBS</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">11</td><td><div class="dd">Apr 28</div><div class="ds">Tue</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Asset Allocation (II)</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">12</td><td><div class="dd">May 12</div><div class="ds">Tue</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Derivatives and ETFs</div><div class="rr am"><a href="https://hbsp.harvard.edu/product/295141-PDF-ENG" target="_blank">Introduction to Derivative Instruments</a> (295141) · HBS · <a href="https://www.nyse.com/publicdocs/nyse/markets/nyse-arca/etf/NYSE_Informed_Investor_What_You_Should_Know_About_ETFs.pdf" target="_blank">What You Should Know About ETFs</a> · NYSE</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">13</td><td><div class="dd">May 27</div><div class="ds">Wed</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Analyzing Return and Risk</div><div class="rr am">Sharpe, information ratio, VaR, tracking error · <a href="https://hbsp.harvard.edu/product/298139-PDF-ENG" target="_blank">Measuring Mutual Fund Performance</a> (298139) · HBS</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">14</td><td><div class="dd">May 29</div><div class="ds">Fri</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Current Environment &amp; Trends in Financial Markets</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">15</td><td><div class="dd">Jun 2</div><div class="ds">Tue</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Final Exam</div><div class="rr">Grades curved per IE Business School policy</div></td><td><span class="tag exam">Exam</span></td></tr>
+    </tbody></table>
+  </div>
+  <div class="sec" id="am-sec-evaluation">
+    <div class="sl">Grade breakdown</div>
+    <div class="eg"><div class="ec"><div class="ep">40%</div><div class="el">Final Exam</div></div><div class="ec"><div class="ep">40%</div><div class="el">Group Project — Portfolio</div></div><div class="ec"><div class="ep">20%</div><div class="el">Class Participation</div></div></div>
+    <div class="dv"></div>
+    <div class="pb"><p><strong>Group Portfolio Project:</strong> Teams design and present an investment portfolio proposal. Continuous evaluation — grades curved per IE Business School policy.</p></div>
+    <div class="dv"></div><div class="sl">AI policy</div>
+    <div class="pb"><p>GenAI is <strong>not permitted</strong> in this course unless explicitly stated by the professor. Any use for assessments = academic misconduct.</p></div>
+  </div>
+  <div class="sec" id="am-sec-bibliography">
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Investment Analysis &amp; Portfolio Management</div><div class="bm">Reilly &amp; Brown · Cengage · 2012 · ISBN: 9781133627036</div></div><a class="bl am" href="https://www.cengage.com/c/investment-analysis-and-portfolio-management-10e-reilly/9781133627036/" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Investments</div><div class="bm">Bodie, Kane &amp; Marcus · McGraw-Hill · 2021 · ISBN: 9781260571158</div></div><a class="bl am" href="https://www.mheducation.com/highered/product/investments-bodie-kane/M9781260571158.html" target="_blank">Library ↗</a></div>
+  </div>
+  <div class="sec" id="am-sec-policies">
+    <div class="pb"><h3>Attendance</h3><p>Mandatory 100%. Below 80% = FAIL. Exceptional absences capped at 20%.</p><p><a href="https://ie.edu" target="_blank">IE Attendance Policy ↗</a></p></div>
+    <div class="pb"><h3>Bloomberg Trading Room (Ses. 7–8)</h3><p>Apr 17 sessions held in <strong>V-403 Trading Room</strong>. Activate Bloomberg access before the session.</p></div>
+    <div class="pb"><h3>Academic integrity</h3><p><a href="https://ie.edu" target="_blank">Academic Integrity Policy ↗</a> · <a href="https://ie.edu" target="_blank">Code of Conduct ↗</a></p></div>
+  </div>
+</div>
+
+<!-- ══════════════ FINANCIAL MODELLING ══════════════ -->
+<div class="cp" id="pane-fm">
+  <div class="ch"><div class="ct">Financial Modelling</div><div class="cm"><span class="badge b-fm">Finance · Concentrations</span> · Int'l MBA · 15 sessions · MM-503<br>Prof. Jacobo Cuadrado Arévalo · <a href="mailto:jcuadrado@faculty.ie.edu">jcuadrado@faculty.ie.edu</a></div></div>
+  <div class="inav"><button class="ib2 active" onclick="ss('fm','sessions',this)">Sessions</button><button class="ib2" onclick="ss('fm','evaluation',this)">Evaluation</button><button class="ib2" onclick="ss('fm','bibliography',this)">Bibliography</button><button class="ib2" onclick="ss('fm','policies',this)">Policies</button></div>
+  <div class="sec active" id="fm-sec-sessions">
+    <table class="st"><thead><tr><th class="cS">Ses.</th><th class="cD">Date</th><th class="cT">Time</th><th class="cR">Room</th><th>Topic &amp; Content</th><th style="width:64px">Type</th></tr></thead><tbody>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md fm">Module 1 — Relative Valuation (Multiples)</span></td></tr>
+      <tr><td class="sn">1–2</td><td><div class="dd">Mar 19</div><div class="ds">Thu</div></td><td class="tv">12:30–3:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Relative Valuation Models — Intro &amp; Multiples</div><div class="rr fm">P/E, EV/EBITDA, P/Sales · Normalization adjustments · PEG ratio · Excel case studies</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td class="sn">3–4</td><td><div class="dd">Mar 25</div><div class="ds">Wed</div></td><td class="tv">10:30am–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Relative Valuation Models — Advanced Comps &amp; Football Field</div><div class="rr fm">Dynamic comps models · Growth-adjusted multiples · Football Field Chart in Excel</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md fm">Module 2 — Discounted Cash Flow (DCF)</span></td></tr>
+      <tr><td class="sn">5</td><td><div class="dd">Apr 15</div><div class="ds">Wed</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">DCF Models — Free Cash Flow &amp; WACC</div><div class="rr fm">FCFF · WACC components &amp; real-world estimation · Data tables for scenario analysis</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td class="sn">6–7</td><td><div class="dd">Apr 29</div><div class="ds">Wed</div></td><td class="tv">9:00–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">DCF Models — Terminal Value &amp; Full Model Build</div><div class="rr fm">Terminal Value: perpetuity &amp; exit multiples · Sensitivity tables · Advanced charts</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md fm">Module 3 — 3-Statement Model</span></td></tr>
+      <tr><td class="sn">8–9</td><td><div class="dd">May 13</div><div class="ds">Wed</div></td><td class="tv">12:00–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Integrated 3-Statement Model — Build &amp; Format</div><div class="rr fm">Income statement, balance sheet (excl. cash), cash flow statement</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td class="sn">10–11</td><td><div class="dd">May 20</div><div class="ds">Wed</div></td><td class="tv">12:00–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">3-Statement Model — Complete Integration &amp; Case Study</div><div class="rr fm">Cash on balance sheet · Supporting schedules · Full model case study</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td class="sn">12–13</td><td><div class="dd">May 26</div><div class="ds">Tue</div></td><td class="tv">12:00–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">3-Statement Model — Review &amp; Group Work</div></td><td><span class="tag grp">Group</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md fm">Module 4 — LBO Financial Model</span></td></tr>
+      <tr><td class="sn">14–15</td><td><div class="dd">Jun 3</div><div class="ds">Wed</div></td><td class="tv">12:00–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">LBO Financial Model + Final Exam <span style="font-size:9px;color:#993C1D">Computer-based MCQ</span></div><div class="rr fm">Transaction assumptions · Sources &amp; uses · Debt schedule · Exit IRR</div></td><td><span class="tag exam">Exam</span></td></tr>
+    </tbody></table>
+  </div>
+  <div class="sec" id="fm-sec-evaluation">
+    <div class="sl">Grade breakdown</div>
+    <div class="eg"><div class="ec"><div class="ep">40%</div><div class="el">Final Exam (MCQ)</div></div><div class="ec"><div class="ep">40%</div><div class="el">Group Financial Model</div></div><div class="ec"><div class="ep">20%</div><div class="el">Class Participation</div></div></div>
+    <div class="dv"></div>
+    <div class="pb"><p><strong>Final Exam:</strong> Computer-based cumulative MCQ. Late group model submissions not graded.</p></div>
+    <div class="dv"></div><div class="sl">AI policy</div>
+    <div class="pb"><p>GenAI permitted with <strong>mandatory acknowledgement</strong>. Cross-check all outputs. Acknowledging AI use does not impact your grade.</p></div>
+  </div>
+  <div class="sec" id="fm-sec-bibliography">
+    <div class="bc"><div><div class="brq comp">Compulsory</div><div class="bt">Financial Modeling</div><div class="bm">Simon Benninga · MIT Press · 5th ed. · 2022 · ISBN: 9780253337825</div></div><a class="bl fm" href="https://mitpress.mit.edu/9780262547444/financial-modeling/" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Financial Modeling in Practice</div><div class="bm">Michael Rees · Wiley · 2018 · ISBN: 9781118904015</div></div><a class="bl fm" href="https://www.wiley.com/en-us/Financial+Modeling+in+Practice-p-9781118904015" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Mastering Financial Modelling in Microsoft Excel</div><div class="bm">Alastair Day · Pearson · 2012 · ISBN: 9780273772255</div></div><a class="bl fm" href="https://www.pearson.com/en-gb/subject-catalog/p/mastering-financial-modelling-in-microsoft-excel/P200000005060" target="_blank">Library ↗</a></div>
+  </div>
+  <div class="sec" id="fm-sec-policies">
+    <div class="pb"><h3>Attendance</h3><p>Mandatory 100%. Below 80% = FAIL. Exceptional absences capped at 20%.</p><p><a href="https://ie.edu" target="_blank">IE Attendance Policy ↗</a></p></div>
+    <div class="pb"><h3>Exam format</h3><p>Computer-based cumulative MCQ. Bring a laptop with Excel installed. Late group model submissions are not graded.</p></div>
+    <div class="pb"><h3>Academic integrity</h3><p><a href="https://ie.edu" target="_blank">Academic Integrity Policy ↗</a> · <a href="https://ie.edu" target="_blank">Code of Conduct ↗</a></p></div>
+  </div>
+</div>
+
+<!-- ══════════════ REAL ESTATE FINANCE ══════════════ -->
+<div class="cp" id="pane-re">
+  <div class="ch"><div class="ct">Real Estate Finance</div><div class="cm"><span class="badge b-re">Finance · Concentrations</span> · Int'l MBA · 15 sessions · MM-503<br>Prof. Roberto Knop Muszynski · <a href="mailto:rknop@faculty.ie.edu">rknop@faculty.ie.edu</a></div></div>
+  <div class="inav"><button class="ib2 active" onclick="ss('re','sessions',this)">Sessions</button><button class="ib2" onclick="ss('re','evaluation',this)">Evaluation</button><button class="ib2" onclick="ss('re','bibliography',this)">Bibliography</button><button class="ib2" onclick="ss('re','policies',this)">Policies</button></div>
+  <div class="sec active" id="re-sec-sessions">
+    <table class="st"><thead><tr><th class="cS">Ses.</th><th class="cD">Date</th><th class="cT">Time</th><th class="cR">Room</th><th>Topic &amp; Content</th><th style="width:64px">Type</th></tr></thead><tbody>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md re">Module 1 — RE Foundations &amp; Mathematics</span></td></tr>
+      <tr><td class="sn">1</td><td><div class="dd">Mar 16</div><div class="ds">Mon</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Introduction to Real Estate Finance</div><div class="rr re">Types of RE assets &amp; investments · Risk &amp; returns · Sustainability in RE · History</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">2</td><td><div class="dd">Mar 20</div><div class="ds">Fri</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">RE Finance (cont.) — Crises &amp; Trends</div><div class="rr re">Financial-real estate crisis 2007 &amp; 2020 · Outlook and trends in the sector</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">3</td><td><div class="dd">Mar 26</div><div class="ds">Thu</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">RE Mathematics: Interest Rates, Curves &amp; Discount Functions (I)</div><div class="rr re">Interest rate conventions &amp; algebra · Yield curve analysis · Curves treatment</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">4</td><td><div class="dd">Mar 27</div><div class="ds">Fri</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">RE Mathematics: Interest Rates, Curves &amp; Discount Functions (II)</div><div class="rr re">Discount function calculation · Forward rate calculations · Cash flows for RE valuation</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md re">Module 2 — RE Economics &amp; Valuation</span></td></tr>
+      <tr><td class="sn">5</td><td><div class="dd">Apr 13</div><div class="ds">Mon</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Real Estate Economics — Demand Factors</div><div class="rr re">Demand elasticity · Endogenous &amp; exogenous determinants</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">6</td><td><div class="dd">Apr 16</div><div class="ds">Thu</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Real Estate Economics — Supply Factors</div><div class="rr re">Supply elasticity · Drivers · New construction profile</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">7</td><td><div class="dd">Apr 20</div><div class="ds">Mon</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Real Estate Valuation (I)</div><div class="rr re">Types of valuation · RE valuation methodologies — introduction</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">8</td><td><div class="dd">Apr 27</div><div class="ds">Mon</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Real Estate Valuation (II) — Case Study</div><div class="rr re">RE valuation methodologies (cont.) · Real asset valuation case study in Excel</div></td><td><span class="tag case">Case</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md re">Module 3 — Financial Products &amp; Capital Markets</span></td></tr>
+      <tr><td class="sn">9</td><td><div class="dd">Apr 28</div><div class="ds">Tue</div></td><td class="tv">1:30–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Financial Products — Mortgages &amp; Securitization (MBS/ABS)</div><div class="rr re">Mortgages · MBS &amp; ABS securitizations · Excel-based exercises</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td class="sn">10</td><td><div class="dd">May 11</div><div class="ds">Mon</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Financial Products — Covered Bonds &amp; Special Vehicles</div><div class="rr re">Covered bonds · Sale &amp; leaseback · Excel-based exercises</div></td><td><span class="tag xl">Excel</span></td></tr>
+      <tr><td class="sn">11</td><td><div class="dd">May 18</div><div class="ds">Mon</div></td><td class="tv">9:00–10:20am</td><td><span class="rb">MM-503</span></td><td><div class="tn">RE Capital Markets — Portfolio Role &amp; Investment Management</div><div class="rr re">Direct &amp; indirect investments · REITs, ETFs &amp; other vehicles · The four quadrants model</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td class="sn">12</td><td><div class="dd">May 21</div><div class="ds">Thu</div></td><td class="tv">12:00–1:20pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">RE Capital Markets — Private Debt &amp; Equity</div><div class="rr re">Mortgage pricing · Non-bank lenders · Crowdfunding · Direct lending · NPLs</div></td><td><span class="tag lec">Lecture</span></td></tr>
+      <tr><td colspan="6" style="padding:4px 5px 2px"><span class="md re">Module 4 — Investment Analysis &amp; Group Presentations</span></td></tr>
+      <tr><td class="sn">13–14</td><td><div class="dd">May 27</div><div class="ds">Wed</div></td><td class="tv">12:00–2:50pm</td><td><span class="rb">MM-503</span></td><td><div class="tn">Investment Opportunity Analysis + Group Case Presentations</div><div class="rr re">Real case: pros/cons, key drivers · Ratios, scenario &amp; comparables analysis · Group presentations: RE investment proposal (15–20 min/group)</div></td><td><span class="tag grp">Group</span></td></tr>
+      <tr><td class="sn">15</td><td><div class="dd">Jun 4</div><div class="ds">Thu</div></td><td class="tv">10:30–11:50am</td><td><span class="rb">MM-503</span></td><td><div class="tn">Final Exam <span style="font-size:9px;color:#993556">MCQ · 4 choices · No negative marking</span></div></td><td><span class="tag exam">Exam</span></td></tr>
+    </tbody></table>
+  </div>
+  <div class="sec" id="re-sec-evaluation">
+    <div class="sl">Grade breakdown</div>
+    <div class="eg"><div class="ec"><div class="ep">40%</div><div class="el">Final Exam (MCQ)</div></div><div class="ec"><div class="ep">40%</div><div class="el">Group Case Study — RE Investment</div></div><div class="ec"><div class="ep">20%</div><div class="el">Class Participation</div></div></div>
+    <div class="dv"></div>
+    <div class="pb"><p><strong>Exam format:</strong> MCQ with 4 choices per question — only one correct answer. <strong>No negative marking.</strong> Covers theoretical/conceptual and numerical questions across all topics.</p><p><strong>Group Case Study:</strong> RE investment proposal — 15–20 min presentations per group (Sessions 13–14, May 27).</p></div>
+    <div class="dv"></div><div class="sl">AI policy</div>
+    <div class="pb"><p>GenAI is <strong>encouraged</strong> to develop a critical perspective on its outputs. Acknowledge all AI use explicitly — failure to do so is an academic honesty violation. Acknowledging does <strong>not</strong> impact your grade.</p><p><em>Suggested format: "I acknowledge the use of [AI system] to [specify use]. Prompts include [list]. Output was used to [explain]."</em></p></div>
+  </div>
+  <div class="sec" id="re-sec-bibliography">
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Real Estate Finance and Investment</div><div class="bm">Peter Linneman · Linneman Associates · 5th ed. · 2018 · ISBN: 9780692996638</div></div><a class="bl re" href="https://www.linnemanassociates.com/publications" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">RICS Red Book — Global Standards</div><div class="bm">RICS · 2022 · ISBN: 9781783214</div></div><a class="bl re" href="https://www.rics.org/profession-standards/rics-standards-and-guidance/sector-standards/valuation/red-book" target="_blank">RICS ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">The Real Estate Game</div><div class="bm">William J. Poorvu · 1999 · ISBN: 9780684855509</div></div><a class="bl re" href="https://www.amazon.com/Real-Estate-Game-Intelligent-Decisionmaking/dp/0684855100" target="_blank">Library ↗</a></div>
+    <div class="bc"><div><div class="brq rec">Recommended</div><div class="bt">Modern Methods of Valuation</div><div class="bm">Eric Shapiro · 2016 · ISBN: 9781138673205</div></div><a class="bl re" href="https://www.routledge.com/Modern-Methods-of-Valuation/Shapiro-Mackmin-Sams/p/book/9781138673205" target="_blank">Library ↗</a></div>
+  </div>
+  <div class="sec" id="re-sec-policies">
+    <div class="pb"><h3>Attendance</h3><p>Mandatory 100%. Below 80% = FAIL. Exceptional absences capped at 20%.</p><p><a href="https://ie.edu" target="_blank">IE Attendance Policy ↗</a></p></div>
+    <div class="pb"><h3>Excel use</h3><p>Sessions 9, 10 and the Case Study involve Excel-based exercises. Bring a laptop with Excel installed to all sessions.</p></div>
+    <div class="pb"><h3>Academic integrity</h3><p><a href="https://ie.edu" target="_blank">Academic Integrity Policy ↗</a> · <a href="https://ie.edu" target="_blank">Code of Conduct ↗</a></p></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── Tab switching ──────────────────────────────────────────
+function sc(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.cp').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pane-'+id).classList.add('active');
+}
+function ss(course,name,btn){
+  const p=document.getElementById('pane-'+course);
+  p.querySelectorAll('.ib2').forEach(b=>b.classList.remove('active'));
+  p.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(course+'-sec-'+name).classList.add('active');
+}
+
+// ── Calendar data ──────────────────────────────────────────
+// [sort_key, date_disp, day, time, room, course_key, ses, topic, type_key]
+const CAL=[
+  ['20260316','Mar 16','Mon','9:00–10:20am','MM-503','re','1','Introduction to Real Estate Finance','lec'],
+  ['20260316','Mar 16','Mon','10:30–11:50am','MM-503','ft','1','Introduction: FinTech — Reshaping the Financial Sector','lec'],
+  ['20260317','Mar 17','Tue','9:00–11:50am','MM-503','ib','1–2','Fixed Income Valuation: Overview','lec'],
+  ['20260317','Mar 17','Tue','1:30–2:50pm','MM-503','ft','2','Blockchain — Much More Than Just Bitcoin','case'],
+  ['20260318','Mar 18','Wed','12:00–1:20pm','MM-503','acf','1','The M&A Process','lec'],
+  ['20260318','Mar 18','Wed','1:30–2:50pm','MM-503','am','1','Introduction to the Asset Management Industry','lec'],
+  ['20260319','Mar 19','Thu','9:00–10:20am','MM-503','am','2','Introduction to Portfolio Management','lec'],
+  ['20260319','Mar 19','Thu','12:30–3:20pm','MM-503','fm','1–2','Relative Valuation — Intro & Multiples','xl'],
+  ['20260320','Mar 20','Fri','9:00–10:20am','MM-503','re','2','RE Finance (cont.) — Crises & Trends','lec'],
+  ['20260320','Mar 20','Fri','10:30–11:50am','MM-503','acf','2','M&A Deals: Tesla–SolarCity','case'],
+  ['20260323','Mar 23','Mon','9:00–10:20am','MM-503','am','3','Introduction to Portfolio Management (cont.)','lec'],
+  ['20260323','Mar 23','Mon','12:00–1:20pm','MM-503','acf','3','Friendly & Hostile Takeovers','case'],
+  ['20260323','Mar 23','Mon','1:30–2:50pm','MM-503','ft','3','DeFi — Decentralized Finance','case'],
+  ['20260324','Mar 24','Tue','11:30am–12:50pm','MM-503','acf','4','Financial Modeling in M&A','lec'],
+  ['20260324','Mar 24','Tue','1:00–2:20pm','MM-503','ib','3','Fixed Income Valuation: Case Study','case'],
+  ['20260325','Mar 25','Wed','10:30am–1:20pm','MM-503','fm','3–4','Relative Valuation — Advanced Comps & Football Field','xl'],
+  ['20260326','Mar 26','Thu','1:30–2:50pm','MM-503','re','3','RE Mathematics: Interest Rates, Curves & Discount Functions (I)','lec'],
+  ['20260327','Mar 27','Fri','10:30–11:50am','MM-503','re','4','RE Mathematics: Interest Rates, Curves & Discount Functions (II)','lec'],
+  ['20260407','Apr 7','Tue','12:00–1:20pm','MM-503','ft','4','Big Data & Analytics — The New "Oil"','case'],
+  ['20260407','Apr 7','Tue','1:30–2:50pm','MM-503','ib','4','Equities Valuation: Overview','lec'],
+  ['20260408','Apr 8','Wed','9:00–10:20am','MM-503','am','4','Equity Management (I)','lec'],
+  ['20260408','Apr 8','Wed','10:30–11:50am','MM-503','ft','5','Payments — A Large Business with Very Different Players','case'],
+  ['20260409','Apr 9','Thu','12:00–1:20pm','MM-503','acf','5','Simulation: Negotiating M&A Transactions','sim'],
+  ['20260409','Apr 9','Thu','1:30–2:50pm','MM-503','ft','6','The Future of Payments','case'],
+  ['20260410','Apr 10','Fri','1:30–2:50pm','MM-503','ft','7','Peer-to-Peer Lending','case'],
+  ['20260413','Apr 13','Mon','9:00–10:20am','MM-503','re','5','Real Estate Economics — Demand Factors','lec'],
+  ['20260413','Apr 13','Mon','12:00–1:20pm','MM-503','ft','8','Robo-Advisors — Democratizing Asset Management','case'],
+  ['20260413','Apr 13','Mon','1:30–2:50pm','MM-503','ib','5','Equities Valuation: Case Study','case'],
+  ['20260414','Apr 14','Tue','9:00–10:20am','MM-503','acf','6','M&A Simulation Debrief','dbf'],
+  ['20260414','Apr 14','Tue','10:30–11:50am','MM-503','ib','6','Comparable Companies Analysis','lec'],
+  ['20260414','Apr 14','Tue','1:30–2:50pm','MM-503','am','5','Equity Management (II)','lec'],
+  ['20260415','Apr 15','Wed','10:30–11:50am','MM-503','ft','9','How to Create a FinTech','ws'],
+  ['20260415','Apr 15','Wed','12:00–1:20pm','MM-503','fm','5','DCF Models — Free Cash Flow & WACC','xl'],
+  ['20260416','Apr 16','Thu','12:00–1:20pm','MM-503','am','6','Fixed Income Management','lec'],
+  ['20260416','Apr 16','Thu','1:30–2:50pm','MM-503','re','6','Real Estate Economics — Supply Factors','lec'],
+  ['20260417','Apr 17','Fri','9:00–10:20am','MM-503','acf','7','Debt Financing & Wall Street Innovation','lec'],
+  ['20260417','Apr 17','Fri','12:00–2:50pm','V-403 Trading','am','7–8','Bloomberg Trading Room Sessions','bbl'],
+  ['20260420','Apr 20','Mon','9:00–10:20am','MM-503','re','7','Real Estate Valuation (I)','lec'],
+  ['20260420','Apr 20','Mon','12:00–1:20pm','MM-503','ft','10','Financial Inclusion & Mobile Banking','case'],
+  ['20260420','Apr 20','Mon','1:30–2:50pm','MM-503','ib','7','Precedent Transaction Analysis','lec'],
+  ['20260421','Apr 21','Tue','9:00–10:20am','MM-503','acf','8','Financial Options & Corporate Finance','lec'],
+  ['20260421','Apr 21','Tue','10:30–11:50am','MM-503','ib','8','Discounted Cash Flow Analysis','lec'],
+  ['20260422','Apr 22','Wed','9:00–10:20am','MM-503','am','9','Alternative Investments','lec'],
+  ['20260422','Apr 22','Wed','10:30–11:50am','MM-503','ft','11','Regulation — Enabler or Constraint?','case'],
+  ['20260423','Apr 23','Thu','12:00–1:20pm','MM-503','acf','9','Managing International Risks (BMC Currencies due)','bmc'],
+  ['20260423','Apr 23','Thu','1:30–2:50pm','MM-503','ft','12','Scalability in the Era of Exponential Growth','case'],
+  ['20260424','Apr 24','Fri','1:30–2:50pm','MM-503','am','10','Asset Allocation (I)','lec'],
+  ['20260427','Apr 27','Mon','9:00–10:20am','MM-503','re','8','Real Estate Valuation (II) — Case Study','case'],
+  ['20260427','Apr 27','Mon','12:00–1:20pm','MM-503','ft','13','Partnership with Banks — A Win-Win Game','case'],
+  ['20260427','Apr 27','Mon','1:30–2:50pm','MM-503','ib','9','Leveraged Buyouts','lec'],
+  ['20260428','Apr 28','Tue','9:00–10:20am','MM-503','am','11','Asset Allocation (II)','lec'],
+  ['20260428','Apr 28','Tue','10:30–11:50am','MM-503','ib','10','Leveraged Buyout Analysis','lec'],
+  ['20260428','Apr 28','Tue','1:30–2:50pm','MM-503','re','9','Financial Products — Mortgages & Securitization','xl'],
+  ['20260429','Apr 29','Wed','9:00–11:50am','MM-503','fm','6–7','DCF Models — Terminal Value & Full Model Build','xl'],
+  ['20260429','Apr 29','Wed','1:30–2:50pm','MM-503','acf','10','PE & VC Overview','lec'],
+  ['20260430','Apr 30','Thu','12:00–2:50pm','MM-503','ft','14–15','Final FinTech Pitches','pitch'],
+  ['20260511','May 11','Mon','9:00–10:20am','MM-503','re','10','Financial Products — Covered Bonds & Special Vehicles','xl'],
+  ['20260511','May 11','Mon','12:00–1:20pm','MM-503','acf','11','Public-to-Private Deals','case'],
+  ['20260511','May 11','Mon','1:30–2:50pm','MM-503','ib','11','Sell-Side vs. Buy-Side M&A','lec'],
+  ['20260512','May 12','Tue','9:00–10:20am','MM-503','am','12','Derivatives and ETFs','lec'],
+  ['20260512','May 12','Tue','10:30–11:50am','MM-503','ib','12','Group Presentations — Case 3','grp'],
+  ['20260513','May 13','Wed','9:00–10:20am','MM-503','acf','12','Financial Modeling in Private Equity','lec'],
+  ['20260513','May 13','Wed','12:00–2:50pm','MM-503','fm','8–9','3-Statement Model — Build & Format','xl'],
+  ['20260518','May 18','Mon','9:00–10:20am','MM-503','re','11','RE Capital Markets — Portfolio Role & Investment Management','lec'],
+  ['20260519','May 19','Tue','9:00–11:50am','MM-503','ib','13–14','Group Presentations (cont.) & Rehearsal','grp'],
+  ['20260520','May 20','Wed','9:00–10:20am','MM-503','acf','13','LBO Simulation — Finsimco','sim'],
+  ['20260520','May 20','Wed','12:00–2:50pm','MM-503','fm','10–11','3-Statement Model — Complete Integration','xl'],
+  ['20260521','May 21','Thu','12:00–1:20pm','MM-503','re','12','RE Capital Markets — Private Debt & Equity','lec'],
+  ['20260525','May 25','Mon','10:30–11:50am','MM-503','acf','14','Divestiture Alternatives & IPOs','case'],
+  ['20260526','May 26','Tue','12:00–2:50pm','MM-503','fm','12–13','3-Statement Model — Review & Group Work','grp'],
+  ['20260527','May 27','Wed','9:00–10:20am','MM-503','am','13','Analyzing Return and Risk','lec'],
+  ['20260527','May 27','Wed','12:00–2:50pm','MM-503','re','13–14','Investment Opportunity Analysis + Group Presentations','grp'],
+  ['20260528','May 28','Thu','12:30–1:50pm','MM-503','ib','15','Final Exam','exam'],
+  ['20260529','May 29','Fri','9:00–10:20am','MM-503','am','14','Current Environment & Trends in Financial Markets','lec'],
+  ['20260601','Jun 1','Mon','12:00–1:20pm','MM-503','acf','15','Final Exam','exam'],
+  ['20260602','Jun 2','Tue','12:00–1:20pm','MM-503','am','15','Final Exam','exam'],
+  ['20260603','Jun 3','Wed','12:00–2:50pm','MM-503','fm','14–15','LBO Financial Model + Final Exam (Computer MCQ)','exam'],
+  ['20260604','Jun 4','Thu','10:30–11:50am','MM-503','re','15','Final Exam — MCQ, No Negative Marking','exam'],
+];
+
+const SUBJ={
+  ib: {label:'Inv. Banking',   cls:'sp-ib'},
+  ft: {label:'Fintech',        cls:'sp-ft'},
+  acf:{label:'Corp. Finance',  cls:'sp-acf'},
+  am: {label:'Asset Mgmt',     cls:'sp-am'},
+  fm: {label:'Fin. Modelling', cls:'sp-fm'},
+  re: {label:'Real Estate',    cls:'sp-re'},
+};
+const TAGLABEL={
+  lec:'Lecture',case:'Case',grp:'Group',sim:'Sim',exam:'Exam',
+  xl:'Excel',ws:'Workshop',dbf:'Debrief',pitch:'Pitch',bmc:'BMC',bbl:'Bloomberg'
+};
+
+const TODAY='20260317';
+
+function buildCalendar(){
+  const tbody=document.getElementById('cal-body');
+  let lastDate='';
+  let html='';
+  CAL.forEach(r=>{
+    const [sort,date,day,time,room,ck,ses,topic,typ]=r;
+    const isPast=sort<TODAY;
+    const isToday=sort===TODAY;
+    if(sort!==lastDate){
+      // count sessions on this date
+      const cnt=CAL.filter(x=>x[0]===sort).length;
+      const todayMark=isToday?' 📍 Today':'';
+      html+=`<tr class="date-sep-row"><td colspan="7"><span class="date-sep-label">${date}</span><span class="date-sep-day">${day}${todayMark}</span><span class="date-sep-count">${cnt} session${cnt>1?'s':''}</span></td></tr>`;
+      lastDate=sort;
+    }
+    const rowCls=isToday?'cal-today-row':isPast?'cal-past-row':'';
+    const s=SUBJ[ck];
+    const rb=room==='V-403 Trading'?`<span class="rb" style="background:#EEEDFE;color:#3C3489">${room}</span>`:`<span class="rb">${room}</span>`;
+    html+=`<tr class="${rowCls}">
+      <td><div class="dd">${date}</div><div class="ds">${day}</div></td>
+      <td class="tv">${time}</td>
+      <td>${rb}</td>
+      <td><span class="subj-pill ${s.cls}">${s.label}</span></td>
+      <td class="sn">${ses}</td>
+      <td><div class="tn">${topic}</div></td>
+      <td><span class="tag ${typ}">${TAGLABEL[typ]||typ}</span></td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+buildCalendar();
+</script>
+</body>
+</html>
